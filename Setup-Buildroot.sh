@@ -22,7 +22,7 @@ sudo apt-get -y install \
  file\
  bc \ 
  wget \ 
- ncurses5  \ 
+ ncurses5 \ 
  glib2 \ 
  gtk2 \ 
  glade2 \ 
