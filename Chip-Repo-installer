@@ -1,0 +1,197 @@
+#!/bin/bash
+
+#Check if u are running this script as root
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  sleep 1
+  exit
+fi
+
+cd / # Change into the root directory
+
+mkdir Chip # Create Folder Chip
+
+#Check if the APT packagemanager is installed
+if [[ ! -d /etc/apt/ ]] ; then
+
+echo "This Script require the APT Packagemanger to Work "
+echo " Pls make sure this script is executed on a system with APT installed "
+
+fi
+
+#This function contains the commands to install the Flasher Envroiment
+
+function Flashinstall ()
+{
+echo " Install dependencies"
+apt update
+
+apt apt install git adb fastboot sunxi-tools u-boot-tools android-tools-fastboot curl wget -y
+
+echo -e "\n Adding udev rule for Allwinner device"
+echo -e 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a",
+#ATTRS{idProduct}=="efe8", GROUP="plugdev", MODE="0660"
+#SYMLINK+="usb-chip"
+#SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="1010",
+#GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"
+#SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010",
+#GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"
+#SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303",
+#GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"
+#' | sudo tee /etc/udev/rules.d/99-allwinner.rules
+sudo udevadm control --reload-rules
+
+cd Chip
+
+git clone https://github.com/Thore-Krug/Flash-CHIP
+
+ cd /
+}
+
+##############################################################################
+
+
+#Function to install Buildroot
+
+function Buildroot ()
+{
+apt update
+
+apt-get install git apache2 curl wget screen sunxi-tools u-boot-tools fastboot android-tools-fastboot apt-mirror adb wich sed make binutils gcc g++ patch gzip bzip2 perl tar cpio python python3 unzip rsync file bc ncurses5 glib2 gtk2 glade2 -y
+
+cd Chip
+
+git clone https://github.com/Project-chip-crumbs/CHIP-buildroot.git
+
+echo " Setup of Buildroot sucessfull "
+
+}
+
+##############################################################################
+
+function mirror ()
+{
+
+cd /
+
+cd  /etc/apt
+
+apt update
+
+apt install apt-mirror apache2
+
+if  [[-e mirror.list ]];
+  then rm mirror.list
+fi
+ wget #edited file host add later
+
+apt-mirror
+
+# Add the other commands !
+
+}
+
+function apt-install ()
+{
+
+cd /
+
+cd  /etc/apt
+
+apt update
+
+apt install apt-mirror apache2
+
+if  [[-e mirror.list ]];
+  then rm mirror.list
+fi
+ wget #edited file host add later
+
+apt-mirror
+
+# Add the other commands !
+
+}
+##############################################################################
+
+
+# A cute welcome Message
+
+echo " "
+echo "   #  #  #"
+echo "  #########"
+echo "###       ###"
+echo "  # {#}   #"
+echo "###  '\######"
+echo "  #       #"
+echo "###       ###"
+echo "  ########"
+echo "   #  #  #"
+echo " "
+echo " ############################################################# "
+echo " Welcome to the Chip-Installer "
+echo " ############################################################# "
+echo " "
+echo " Do u want to install the Flasher environment ? "
+echo " Pls enter y if u want or n if u doesnt then press enter "
+
+read Flasher
+
+echo " "
+echo " ############################################################# "
+echo " "
+echo " Do u want to install the Buildroot environment ? "
+echo " "
+echo " Pls enter y if u do so or n if u doesnt then press enter "
+
+ read buildroot
+
+ echo " "
+ echo " ############################################################# "
+ echo " "
+ echo " Do u want to Setup a lokal APT mirror of the old NTC APT server ? "
+ echo " "
+ echo " Pls enter y if u do so or n if u doesnt then press enter "
+
+ read mirror
+
+ echo " "
+ echo " ############################################################# "
+ echo " "
+ echo " Do u want to setup a local APT mirror for all ARM Debian Packages  ? "
+ echo " "
+ echo " Pls enter y if u do so or n if u doesnt then press enter "
+
+ read apt
+
+ ##############################################################################
+## Checks if you choosed to install the Flasher environment
+
+if [[ $Flasher = y ]] ;
+then
+   Flashinstall
+
+fi
+
+##############################################################################
+## Checks if u choosed to Setup the Buildroot envroiment
+
+if [[ $buildroot = y ]] ;
+  then
+     Buildroot
+fi
+
+##############################################################################
+## Checks if u choosed to install a local mirror of the NTC APT Server
+if [[$mirror = y ]] ;
+  then
+    mirror
+fi
+
+##############################################################################
+## Checks if u choosed to Set up a APT server for Arm Packages
+if [[$apt = y ]] ;
+  then
+    apt-install
+fi
